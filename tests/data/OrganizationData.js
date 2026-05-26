@@ -1,6 +1,6 @@
 const OrganizationData = {
     validOrganization: {
-        orgName: `Test Organization ${Date.now()}`,
+        orgName: `Automation Org ${Date.now()}`,
         orgWebsite: 'https://testorg.com'
     }
 };

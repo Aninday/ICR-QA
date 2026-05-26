@@ -1,10 +1,17 @@
 const { test, expect } = require('@playwright/test');
 const { SignUpPage } = require('../../../pages/LogIn/signUpPage');
-const { generateTestEmail } = require('../../helper/signUpHelper');
+const { generateTestEmail, getGmailMessages } = require('../../helper/signUpHelper');
 const { ValidTestData } = require('../../data/SignUpdata');
 const { saveData } = require('../../helper/apiHelper');
 
 test.describe('Sign Up Page UI Tests', { tag: ['@signUpUi', '@UI'] }, () => {
+
+    test.use({
+    storageState: {
+        cookies: [],
+        origins: []
+    }
+});
 
     let signUpPage;
     let newEmail;
@@ -40,7 +47,12 @@ test.describe('Sign Up Page UI Tests', { tag: ['@signUpUi', '@UI'] }, () => {
 
         // Navigate to the sign-up page and fill in the required fields
         await signUpPage.signUp(newEmail, ValidTestData.Password);
-
+        await expect(page).toHaveURL(/\/verify-email\?.*type=confirm_email/);
+        await expect(signUpPage.otpInput).toBeVisible();
+        const { receivedVerificationCode } = await getGmailMessages(newEmail);
+        await signUpPage.inputOtp(receivedVerificationCode);
+        await page.waitForTimeout(5000);
+        await expect(page).toHaveURL(`/`);
+        await expect(page.getByText(`${newEmail}`)).toBeVisible();
     });
-
 });
