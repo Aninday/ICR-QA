@@ -1,7 +1,14 @@
 const { test, expect, chromium } = require('@playwright/test');
 const { SignInPage } = require('../../../pages/LogIn/signInPage');
 
-test.describe('Login Page UI Tests', { tag: ['@loginUi', '@UI'] }, () => {
+test.describe('Sign In Page Tests', { tag: ['@loginUi', '@UI'] }, () => {
+  
+  test.use({
+    storageState: {
+        cookies: [],
+        origins: []
+    }
+});
 
   let signInPage;
 
@@ -29,11 +36,11 @@ test.describe('Login Page UI Tests', { tag: ['@loginUi', '@UI'] }, () => {
 
   test('Login with Invalid Password Credential', async ({ page, baseURL }) => {
 
-    await signInPage.login(process.env.EMAIL, process.env.PASSWORD);
+    await signInPage.login(process.env.EMAIL, process.env.INVALIDPASSWORD);
 
     const errorMessage = await signInPage.getErrorMessage();
 
-    expect(errorMessage).toContain('Unable to log in');
+    expect(errorMessage).toContain('Invalid email or password');
     expect(page.url()).toBe(`${baseURL}/login`);
 
   });
@@ -44,41 +51,27 @@ test.describe('Login Page UI Tests', { tag: ['@loginUi', '@UI'] }, () => {
 
     const errorMessage = await signInPage.getErrorMessage();
 
-    expect(errorMessage).toContain('Unable to log in');
+    expect(errorMessage).toContain('Invalid email or password');
     expect(page.url()).toBe(`${baseURL}/login`);
   });
 
-  test.only('Should Successfully Login with valid Credentials', async () => {
-  const browser = await chromium.launch({
-    headless: false,
-    slowMo: 300,
-    args: ['--disable-blink-features=AutomationControlled']
-  });
+  test.only('Should Successfully Login with valid Credentials', async ({ page, context, baseURL }) => {
 
-  const context = await browser.newContext();
+    // navigate to base URL and perform login using page from fixture
+    await page.goto(process.env.BASE_URL_DEV || baseURL);
 
-  const page = await context.newPage();
+    await signInPage.login(
+      process.env.EMAIL,
+      process.env.PASSWORD
+    );
 
-  const signInPage = new SignInPage(page);
+    await expect(page).toHaveURL(`${baseURL}/`);
 
-  await page.goto(process.env.BASE_URL_DEV);
+    // Save authenticated session
+    await context.storageState({
+      path: 'playwright/.auth/user.json'
+    });
 
-  await signInPage.login(
-    process.env.EMAIL, 
-    process.env.PASSWORD
-  );
-
-  // Wait manually for captcha solving if needed
-  await page.pause();
-
-  await page.waitForURL('**/');
-
-  // Save authenticated session
-  await context.storageState({
-    path: 'playwright/.auth/user.json'
-  });
-
-  await browser.close();
 });
 
 });

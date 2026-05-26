@@ -7,7 +7,7 @@ const baseUrl =
     ? process.env.BASE_URL_LOCAL
     : process.env.PLATFORM === 'dev'
       ? process.env.BASE_URL_DEV
-      : process.env.BASE_URL_PROD;
+      : process.env.BASE_URL_PROD || process.env.BASE_URL_DEV || process.env.BASE_URL_LOCAL || 'http://localhost:3000';
 
 /**
  * Read environment variables from file.
@@ -38,7 +38,13 @@ export default defineConfig({
     ['list'] // Shows real-time results in console
   ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
+  globalSetup:
+        require.resolve(
+            './tests/auth/global.setup.js'
+        ),
+        
   use: {
+    headless: true,
     /* Base URL to use in actions like `await page.goto('')`. */
     // baseURL: 'http://localhost:3000',
     storageState: 'playwright/.auth/user.json',
@@ -60,6 +66,22 @@ export default defineConfig({
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
     },
+    
+    // // SignIn project
+    // {
+    //     name: 'signIn',
+
+    //     testMatch: /.*signInTest\.spec\.js/,
+    // },
+
+    // // Create Organization project
+    // {
+    //     name: 'create-organization',
+
+    //     testMatch: /.*createOrganization\.spec\.js/,
+
+    //     dependencies: ['signIn'],
+    // }
 
     // {
     //   name: 'firefox',

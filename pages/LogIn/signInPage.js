@@ -11,11 +11,12 @@ class SignInPage {
         this.signUpButton = page.getByRole('button', { name: /Don't have an account\? Sign up/i })
         this.pageHeading = page.locator(':text("Login")');
         this.icrLogoImage = page.locator("svg[width='146']");
+        this.errorMessage = page.getByText('Invalid email or password');
         
     }
 
-    async navigate() {
-        await this.page.goto('/login');
+    async navigate(url = '/login') {
+        await this.page.goto(url);
     }
 
     async enterEmail(email) {
@@ -31,11 +32,18 @@ class SignInPage {
     }
 
     async clickForgotPassword() {
-        await this.forgotPasswordLink.click();
+        await Promise.all([
+            this.page.waitForSelector('button:has-text("Send reset password instructions")', { state: 'visible' }),
+            this.forgotPasswordLink.click()
+        ]);
     }
 
     async clickCreateAccount() {
         await this.signUpButton.click();
+    }
+
+    async getErrorMessage() {
+        return await this.errorMessage.textContent();
     }
 
     async login(email, password) {

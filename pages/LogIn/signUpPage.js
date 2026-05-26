@@ -10,6 +10,7 @@ class SignUpPage {
         this.signInLink = page.getByRole('link', { name: /Already have an account\? Sign in/i });
         this.pageHeading = page.getByText('Create an account');
         this.icrLogoImage = page.locator("svg[width='146']");
+        this.otpInput = page.locator('input');
     }
 
     async navigate() {
@@ -34,6 +35,9 @@ class SignUpPage {
 
     async clickSignIn() {
         await this.signInLink.click();
+    }
+    async inputOtp(otp) {
+        await this.otpInput.fill(otp);
     }
 
     async signUp(email, password) {
